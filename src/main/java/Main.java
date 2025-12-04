@@ -18,6 +18,7 @@ public class Main {
         while(isRunning) {
             System.out.print("$ ");
             String input = scanner.nextLine().trim();
+            if(input.equals("exit")) break;
             System.out.println(input + ": command not found");
         }
     }
