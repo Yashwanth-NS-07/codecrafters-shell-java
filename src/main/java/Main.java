@@ -1,11 +1,24 @@
 import java.util.Scanner;
 
 public class Main {
+    private static boolean isRunning = true;
+    private static Scanner scanner = null;
+
     public static void main(String[] args) {
-        Scanner sc = new Scanner(System.in);
-        System.out.print("$ ");
-        String input = sc.nextLine().trim();
-        System.out.println(input + ": command not found");
-        sc.close();
+
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+            isRunning = false;
+        }));
+        scanner = new Scanner(System.in);
+        startShell();
+        scanner.close();
+    }
+
+    public static void startShell() {
+        while(isRunning) {
+            System.out.print("$ ");
+            String input = scanner.nextLine().trim();
+            System.out.println(input + ": command not found");
+        }
     }
 }
