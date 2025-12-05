@@ -1,3 +1,5 @@
+import java.io.File;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Scanner;
 
@@ -24,31 +26,28 @@ public class Main {
 
             BuiltIns builtIn;
             try {
-                builtIn = BuiltIns.valueOf(cmdAndArgs[0].toUpperCase());
+                builtIn = BuiltIns.valueOf(cmdAndArgs[0]);
             } catch (IllegalArgumentException iae) {
                 System.out.println(cmdAndArgs[0] + ": command not found");
                 continue;
             }
 
             switch (builtIn) {
-                case EXIT -> {
+                case exit -> {
                     isRunning = false;
                 }
-                case ECHO -> {
+                case echo -> {
                     System.out.println(cmdAndArgs[1]);
                 }
-                case TYPE -> {
+                case type -> {
                     cmdAndArgs[1] = cmdAndArgs[1].trim();
                     try {
-                        BuiltIns.valueOf(cmdAndArgs[1].toUpperCase());
+                        BuiltIns.valueOf(cmdAndArgs[1]);
                         System.out.println(cmdAndArgs[1] + " is a shell builtin");
                     } catch (IllegalArgumentException iae) {
-                        System.out.println(cmdAndArgs[1] + ": not found");
+                        String output = checkForExecutableInPath(cmdAndArgs[1]);
+                        System.out.println(output);
                     }
-
-                }
-                default -> {
-                    System.out.println(cmdAndArgs[0] + ": command not found");
                 }
             }
         }
@@ -64,9 +63,27 @@ public class Main {
         return cmdAndArgs;
     }
 
+    private static String checkForExecutableInPath(String program) {
+        String path = System.getenv("PATH");
+        String[] dirs = path.split(File.pathSeparator);
+        for(String dir: dirs) {
+            File file = new File(dir);
+            if(file.isFile() && file.getName().equals(program)) {
+                return program + " is " + file.getAbsolutePath();
+            } else if(file.isDirectory()) {
+                for(File file1: Objects.requireNonNull(file.listFiles())) {
+                    if(file1.isFile() && file1.getName().equals(program)) {
+                        return program + " is " + file1.getAbsolutePath();
+                    }
+                }
+            }
+        }
+        return program + ": not found";
+    }
+
     public enum BuiltIns {
-        EXIT,
-        ECHO,
-        TYPE;
+        exit,
+        echo,
+        type;
     }
 }
