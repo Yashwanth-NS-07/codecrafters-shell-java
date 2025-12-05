@@ -1,11 +1,10 @@
+import java.util.Optional;
 import java.util.Scanner;
 
 public class Main {
     private static boolean isRunning = true;
     private static Scanner scanner = null;
 
-    private static final String exit = "exit";
-    private static final String echo = "echo";
 
     public static void main(String[] args) {
 
@@ -23,12 +22,30 @@ public class Main {
             String[] cmdAndArgs = parse(scanner.nextLine().trim());
             assert cmdAndArgs.length == 2;
 
-            switch (cmdAndArgs[0]) {
-                case exit -> {
+            BuiltIns builtIn;
+            try {
+                builtIn = BuiltIns.valueOf(cmdAndArgs[0].toUpperCase());
+            } catch (IllegalArgumentException iae) {
+                System.out.println(cmdAndArgs[0] + ": command not found");
+                continue;
+            }
+
+            switch (builtIn) {
+                case EXIT -> {
                     isRunning = false;
                 }
-                case echo -> {
+                case ECHO -> {
                     System.out.println(cmdAndArgs[1]);
+                }
+                case TYPE -> {
+                    cmdAndArgs[1] = cmdAndArgs[1].trim();
+                    try {
+                        BuiltIns.valueOf(cmdAndArgs[1].toUpperCase());
+                        System.out.println(cmdAndArgs[1] + ": is a shell builtin");
+                    } catch (IllegalArgumentException iae) {
+                        System.out.println(cmdAndArgs[1] + ": not found");
+                    }
+
                 }
                 default -> {
                     System.out.println(cmdAndArgs[0] + ": command not found");
@@ -45,5 +62,11 @@ public class Main {
         cmdAndArgs[0] = input.substring(0, programAndArgSeparatorIndex);
         cmdAndArgs[1] = input.substring(programAndArgSeparatorIndex+1);
         return cmdAndArgs;
+    }
+
+    public enum BuiltIns {
+        EXIT,
+        ECHO,
+        TYPE;
     }
 }
