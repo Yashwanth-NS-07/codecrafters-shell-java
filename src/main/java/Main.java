@@ -69,7 +69,7 @@ public class Main {
 
     private static void runProcess(File file, String args) throws IOException, ExecutionException, InterruptedException {
         List<String> programWithArgs = new ArrayList<>();
-        programWithArgs.add(file.getAbsolutePath());
+        programWithArgs.add(file.getName());
         programWithArgs.addAll(Arrays.asList(args.split(" ")));
         ProcessBuilder processBuilder = new ProcessBuilder(programWithArgs);
         Process process = processBuilder.start();
