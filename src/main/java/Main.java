@@ -1,10 +1,11 @@
 import java.io.File;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Scanner;
+import java.io.IOException;
+import java.util.*;
+import java.util.concurrent.ExecutionException;
 
 public class Main {
     private static boolean isRunning = true;
+    private static String PATH = "PATH";
     private static Scanner scanner = null;
 
 
@@ -28,7 +29,16 @@ public class Main {
             try {
                 builtIn = BuiltIns.valueOf(cmdAndArgs[0]);
             } catch (IllegalArgumentException iae) {
-                System.out.println(cmdAndArgs[0] + ": command not found");
+                Optional<File> file = checkForExecutableFileInPath(cmdAndArgs[0]);
+                if(file.isEmpty()) {
+                    System.out.println(cmdAndArgs[0] + ": command not found");
+                } else {
+                    try {
+                        runProcess(file.get(), cmdAndArgs[1]);
+                    } catch (IOException | ExecutionException | InterruptedException e) {
+                        System.out.println(e.getMessage());
+                    }
+                }
                 continue;
             }
 
@@ -57,6 +67,19 @@ public class Main {
         }
     }
 
+    private static void runProcess(File file, String args) throws IOException, ExecutionException, InterruptedException {
+        List<String> programWithArgs = new ArrayList<>();
+        programWithArgs.add(file.getAbsolutePath());
+        programWithArgs.addAll(Arrays.asList(args.split(" ")));
+        ProcessBuilder processBuilder = new ProcessBuilder(programWithArgs);
+        Process process = processBuilder.start();
+        byte[] outputArray = process.getInputStream().readAllBytes();
+        System.out.print(new String(outputArray));
+        byte[] errorArray = process.getErrorStream().readAllBytes();
+        System.out.print(new String(errorArray));
+        process.onExit().get();
+    }
+
     private static String[] parse(String input) {
         String[] cmdAndArgs = new String[2];
         int programAndArgSeparatorIndex = input.indexOf(" ");
@@ -68,21 +91,25 @@ public class Main {
     }
 
     private static Optional<File> checkForExecutableFileInPath(String program) {
-        String path = System.getenv("PATH");
+        String path = System.getenv(PATH);
         String[] dirs = path.split(File.pathSeparator);
         for(String dir: dirs) {
             File file = new File(dir);
-            if(file.isFile() && file.getName().equals(program) && file.canExecute()) {
+            if(isExecutableFile(file) && file.getName().equals(program)) {
                 return Optional.of(file);
             } else if(file.isDirectory()) {
                 for(File internalFile: Objects.requireNonNull(file.listFiles())) {
-                    if(internalFile.isFile() && internalFile.canExecute() && internalFile.getName().equals(program)) {
+                    if(isExecutableFile(internalFile) && internalFile.getName().equals(program)) {
                         return Optional.of(internalFile);
                     }
                 }
             }
         }
         return Optional.empty();
+    }
+
+    private static boolean isExecutableFile(File file) {
+        return file.isFile() && file.canExecute();
     }
 
     public enum BuiltIns {
