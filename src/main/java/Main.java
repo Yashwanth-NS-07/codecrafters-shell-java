@@ -68,12 +68,12 @@ public class Main {
         String[] dirs = path.split(File.pathSeparator);
         for(String dir: dirs) {
             File file = new File(dir);
-            if(file.isFile() && file.getName().equals(program)) {
+            if(file.isFile() && file.getName().equals(program) && file.canExecute()) {
                 return program + " is " + file.getAbsolutePath();
             } else if(file.isDirectory()) {
-                for(File file1: Objects.requireNonNull(file.listFiles())) {
-                    if(file1.isFile() && file1.getName().equals(program)) {
-                        return program + " is " + file1.getAbsolutePath();
+                for(File internalFile: Objects.requireNonNull(file.listFiles())) {
+                    if(internalFile.isFile() && internalFile.canExecute() && internalFile.getName().equals(program)) {
+                        return program + " is " + internalFile.getAbsolutePath();
                     }
                 }
             }
