@@ -41,7 +41,7 @@ public class Main {
                     cmdAndArgs[1] = cmdAndArgs[1].trim();
                     try {
                         BuiltIns.valueOf(cmdAndArgs[1].toUpperCase());
-                        System.out.println(cmdAndArgs[1] + ": is a shell builtin");
+                        System.out.println(cmdAndArgs[1] + " is a shell builtin");
                     } catch (IllegalArgumentException iae) {
                         System.out.println(cmdAndArgs[1] + ": not found");
                     }
