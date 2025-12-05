@@ -40,13 +40,17 @@ public class Main {
                     System.out.println(cmdAndArgs[1]);
                 }
                 case type -> {
-                    cmdAndArgs[1] = cmdAndArgs[1].trim();
+                    String program = cmdAndArgs[1].trim();
                     try {
-                        BuiltIns.valueOf(cmdAndArgs[1]);
-                        System.out.println(cmdAndArgs[1] + " is a shell builtin");
+                        BuiltIns.valueOf(program);
+                        System.out.println(program + " is a shell builtin");
                     } catch (IllegalArgumentException iae) {
-                        String output = checkForExecutableInPath(cmdAndArgs[1]);
-                        System.out.println(output);
+                        Optional<File> executableFile= checkForExecutableFileInPath(program);
+                        if(executableFile.isEmpty()) {
+                            System.out.println(program + ": not found");
+                        } else {
+                            System.out.println(program + " is " + executableFile.get().getAbsolutePath());
+                        }
                     }
                 }
             }
@@ -63,22 +67,22 @@ public class Main {
         return cmdAndArgs;
     }
 
-    private static String checkForExecutableInPath(String program) {
+    private static Optional<File> checkForExecutableFileInPath(String program) {
         String path = System.getenv("PATH");
         String[] dirs = path.split(File.pathSeparator);
         for(String dir: dirs) {
             File file = new File(dir);
             if(file.isFile() && file.getName().equals(program) && file.canExecute()) {
-                return program + " is " + file.getAbsolutePath();
+                return Optional.of(file);
             } else if(file.isDirectory()) {
                 for(File internalFile: Objects.requireNonNull(file.listFiles())) {
                     if(internalFile.isFile() && internalFile.canExecute() && internalFile.getName().equals(program)) {
-                        return program + " is " + internalFile.getAbsolutePath();
+                        return Optional.of(internalFile);
                     }
                 }
             }
         }
-        return program + ": not found";
+        return Optional.empty();
     }
 
     public enum BuiltIns {
