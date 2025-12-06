@@ -127,8 +127,10 @@ public class Main {
         cd {
             public void doTask(String args) {
                 File dir = new File(args);
-                if(dir.isAbsolute()) {
+                if(dir.isDirectory() && dir.isAbsolute()) {
                     System.setProperty("user.dir", args);
+                } else {
+                    System.out.println(args + ": No such file or directory");
                 }
             }
         };
