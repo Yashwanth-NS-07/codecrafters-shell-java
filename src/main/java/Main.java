@@ -110,7 +110,7 @@ public class Main {
                     BuiltIns.valueOf(program);
                     System.out.println(program + " is a shell builtin");
                 } catch (IllegalArgumentException iae) {
-                    Optional<File> executableFile= checkForExecutableFileInPath(program);
+                    Optional<File> executableFile = checkForExecutableFileInPath(program);
                     if(executableFile.isEmpty()) {
                         System.out.println(program + ": not found");
                     } else {
@@ -127,10 +127,18 @@ public class Main {
         cd {
             public void doTask(String args) {
                 File dir = new File(args);
-                if(dir.isDirectory() && dir.isAbsolute()) {
-                    System.setProperty("user.dir", args);
+                if(dir.getPath().equals("~")) {
+                    System.setProperty("user.dir", System.getProperty("user.home"));
+                } else if(dir.isAbsolute()) {
+                    if(dir.isDirectory()) System.setProperty("user.dir", dir.getAbsolutePath());
                 } else {
-                    System.out.println(args + ": No such file or directory");
+                    dir = new File(System.getProperty("user.dir"), dir.getPath());
+                    try {
+                        if(dir.isDirectory()) System.setProperty("user.dir", dir.getCanonicalPath());
+                        else System.out.println(args + ": No such file or directory");
+                    } catch (IOException e) {
+                        System.out.println(e.getMessage());
+                    }
                 }
             }
         };
