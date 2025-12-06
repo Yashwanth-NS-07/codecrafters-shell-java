@@ -123,6 +123,14 @@ public class Main {
             public void doTask(String args) {
                 System.out.println(System.getProperty("user.dir"));
             }
+        },
+        cd {
+            public void doTask(String args) {
+                File dir = new File(args);
+                if(dir.isAbsolute()) {
+                    System.setProperty("user.dir", args);
+                }
+            }
         };
 
         public abstract void doTask(String args);
