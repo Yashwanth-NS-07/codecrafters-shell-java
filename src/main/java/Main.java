@@ -143,7 +143,7 @@ public class Main {
                         System.out.println(e.getMessage());
                     }
                 }
-                if(!setSuccessfull) System.out.println(args + ": No such file or directory");
+                if(!setSuccessfull) System.out.println(dir.getName() + ": No such file or directory");
             }
         };
 
