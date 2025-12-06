@@ -131,6 +131,7 @@ public class Main {
                     System.setProperty("user.dir", System.getProperty("user.home"));
                 } else if(dir.isAbsolute()) {
                     if(dir.isDirectory()) System.setProperty("user.dir", dir.getAbsolutePath());
+                    else System.out.println(args + ": No such file or directory");
                 } else {
                     dir = new File(System.getProperty("user.dir"), dir.getPath());
                     try {
