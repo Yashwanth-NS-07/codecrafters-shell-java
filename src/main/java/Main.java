@@ -129,7 +129,7 @@ public class Main {
                 boolean setSuccessfull = true;
                 File dir = new File(args);
                 if(dir.getPath().equals("~")) {
-                    System.setProperty("user.dir", System.getProperty("user.home"));
+                    System.setProperty("user.dir", System.getenv("HOME"));
                 } else if(dir.isAbsolute()) {
                     if(dir.isDirectory()) System.setProperty("user.dir", dir.getAbsolutePath());
                     else setSuccessfull = false;
