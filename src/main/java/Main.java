@@ -126,21 +126,23 @@ public class Main {
         },
         cd {
             public void doTask(String args) {
+                boolean setSuccessfull = true;
                 File dir = new File(args);
                 if(dir.getPath().equals("~")) {
                     System.setProperty("user.dir", System.getProperty("user.home"));
                 } else if(dir.isAbsolute()) {
                     if(dir.isDirectory()) System.setProperty("user.dir", dir.getAbsolutePath());
-                    else System.out.println(args + ": No such file or directory");
+                    else setSuccessfull = false;
                 } else {
                     dir = new File(System.getProperty("user.dir"), dir.getPath());
                     try {
                         if(dir.isDirectory()) System.setProperty("user.dir", dir.getCanonicalPath());
-                        else System.out.println(args + ": No such file or directory");
+                        else setSuccessfull = false;
                     } catch (IOException e) {
                         System.out.println(e.getMessage());
                     }
                 }
+                if(!setSuccessfull) System.out.println(args + ": No such file or directory");
             }
         };
 
