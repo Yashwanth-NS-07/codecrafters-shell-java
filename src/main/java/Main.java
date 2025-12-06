@@ -128,7 +128,8 @@ public class Main {
                     return;
                 }
                 boolean setSuccessfull = true;
-                File dir = args.length == 0? new File("~"): new File(args[0]);
+                String path = args.length == 0? "~": args[0];
+                File dir = new File(path);
                 if(dir.getPath().equals("~")) {
                     System.setProperty("user.dir", System.getenv("HOME"));
                 } else if(dir.isAbsolute()) {
@@ -143,7 +144,7 @@ public class Main {
                         System.out.println(e.getMessage());
                     }
                 }
-                if(!setSuccessfull) System.out.println("cd: " + dir.getName() + ": No such file or directory");
+                if(!setSuccessfull) System.out.println("cd: " + path + ": No such file or directory");
             }
         };
 
