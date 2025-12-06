@@ -8,7 +8,6 @@ public class Main {
     private static String PATH = "PATH";
     private static Scanner scanner = null;
 
-
     public static void main(String[] args) {
 
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
@@ -22,24 +21,23 @@ public class Main {
     public static void startShell() {
         while(isRunning) {
             System.out.print("$ ");
-            String[] cmdAndArgs = parse(scanner.nextLine().trim());
-            assert cmdAndArgs.length == 2;
+            Parser parser = new Parser(scanner);
 
             try {
-                BuiltIns builtIn = BuiltIns.valueOf(cmdAndArgs[0]);
+                BuiltIns builtIn = BuiltIns.valueOf(parser.getProgram());
                 if(builtIn == BuiltIns.exit) {
                     isRunning = false;
                     continue;
                 } else {
-                    builtIn.doTask(cmdAndArgs[1]);
+                    builtIn.doTask(parser.getArgs());
                 }
             } catch (IllegalArgumentException iae) {
-                Optional<File> file = checkForExecutableFileInPath(cmdAndArgs[0]);
+                Optional<File> file = checkForExecutableFileInPath(parser.getProgram());
                 if(file.isEmpty()) {
-                    System.out.println(cmdAndArgs[0] + ": command not found");
+                    System.out.println(parser.getProgram() + ": command not found");
                 } else {
                     try {
-                        runProcess(file.get(), cmdAndArgs[1]);
+                        runProcess(file.get(), parser.getArgs());
                     } catch (IOException | ExecutionException | InterruptedException e) {
                         System.out.println(e.getMessage());
                     }
@@ -49,17 +47,15 @@ public class Main {
         }
     }
 
-    private static void runProcess(File file, String args) throws IOException, ExecutionException, InterruptedException {
+    private static void runProcess(File file, String... args) throws IOException, ExecutionException, InterruptedException {
         List<String> programWithArgs = new ArrayList<>();
         programWithArgs.add(file.getName());
-        programWithArgs.addAll(Arrays.asList(args.split(" ")));
-        ProcessBuilder processBuilder = new ProcessBuilder(programWithArgs);
+        programWithArgs.addAll(List.of(args));
+        ProcessBuilder processBuilder = new ProcessBuilder(programWithArgs)
+                .inheritIO()
+                .redirectErrorStream(true);
         Process process = processBuilder.start();
-        byte[] outputArray = process.getInputStream().readAllBytes();
-        System.out.print(new String(outputArray));
-        byte[] errorArray = process.getErrorStream().readAllBytes();
-        System.out.print(new String(errorArray));
-        process.onExit().get();
+        process.waitFor();
     }
 
     private static String[] parse(String input) {
@@ -96,38 +92,43 @@ public class Main {
 
     public enum BuiltIns {
         exit {
-            public void doTask(String args) {}
+            public void doTask(String... args) {}
         },
         echo {
-            public void doTask(String args) {
-                System.out.println(args);
+            public void doTask(String... args) {
+                System.out.println(String.join(" ", args));
             }
         },
         type {
-            public void doTask(String args) {
-                String program = args.trim();
-                try {
-                    BuiltIns.valueOf(program);
-                    System.out.println(program + " is a shell builtin");
-                } catch (IllegalArgumentException iae) {
-                    Optional<File> executableFile = checkForExecutableFileInPath(program);
-                    if(executableFile.isEmpty()) {
-                        System.out.println(program + ": not found");
-                    } else {
-                        System.out.println(program + " is " + executableFile.get().getAbsolutePath());
+            public void doTask(String... args) {
+                for(String program: args) {
+                    try {
+                        BuiltIns.valueOf(program);
+                        System.out.println(program + " is a shell builtin");
+                    } catch (IllegalArgumentException iae) {
+                        Optional<File> executableFile = checkForExecutableFileInPath(program);
+                        if (executableFile.isEmpty()) {
+                            System.out.println(program + ": not found");
+                        } else {
+                            System.out.println(program + " is " + executableFile.get().getAbsolutePath());
+                        }
                     }
                 }
             }
         },
         pwd {
-            public void doTask(String args) {
+            public void doTask(String... args) {
                 System.out.println(System.getProperty("user.dir"));
             }
         },
         cd {
-            public void doTask(String args) {
+            public void doTask(String... args) {
+                if(args.length > 1) {
+                    System.out.println("cd: too many arguments");
+                    return;
+                }
                 boolean setSuccessfull = true;
-                File dir = new File(args);
+                File dir = args.length == 0? new File("~"): new File(args[0]);
                 if(dir.getPath().equals("~")) {
                     System.setProperty("user.dir", System.getenv("HOME"));
                 } else if(dir.isAbsolute()) {
@@ -146,6 +147,6 @@ public class Main {
             }
         };
 
-        public abstract void doTask(String args);
+        public abstract void doTask(String... args);
     }
 }

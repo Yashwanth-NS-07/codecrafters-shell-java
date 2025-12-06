@@ -1,0 +1,58 @@
+import java.util.*;
+
+public class Parser {
+    private List<String> args = new ArrayList<>();
+    private char singleQuote = '\'';
+    public Parser(Scanner scanner) {
+        parse(scanner);
+    }
+    private void parse(Scanner scanner) {
+        boolean isDone = false;
+        boolean insideQuote = false;
+        StringBuilder sb = new StringBuilder();
+        while(!isDone) {
+            if(insideQuote) System.out.print("> ");
+            String line = scanner.nextLine();
+            for(int i = 0; i < line.length(); i++) {
+                char c = line.charAt(i);
+                if(insideQuote) {
+                    if(c == '\'') {
+                        if(i == line.length()-1) {
+                            args.add(sb.toString());
+                            sb.delete(0, sb.length());
+                        }
+                        insideQuote = false;
+                    } else {
+                        sb.append(c);
+                    }
+                } else {
+                    if(c == '\'') {
+                        insideQuote = true;
+                    } else if(c == ' ') {
+                        if(!sb.isEmpty()) args.add(sb.toString());
+                        sb.delete(0, sb.length());
+                    } else {
+                        sb.append(c);
+                    }
+                }
+            }
+            if(!insideQuote) {
+                isDone = true;
+                if(!sb.isEmpty()) args.add(sb.toString());
+            }
+        }
+
+    }
+    public String getProgram() {
+        if(!args.isEmpty()) {
+            return args.get(0);
+        }
+        return "";
+    }
+    public String[] getArgs() {
+        if(args.size() > 1) {
+            return args.subList(1, args.size()).toArray(new String[0]);
+        }
+        return new String[]{};
+    }
+}
