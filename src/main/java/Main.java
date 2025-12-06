@@ -25,9 +25,14 @@ public class Main {
             String[] cmdAndArgs = parse(scanner.nextLine().trim());
             assert cmdAndArgs.length == 2;
 
-            BuiltIns builtIn;
             try {
-                builtIn = BuiltIns.valueOf(cmdAndArgs[0]);
+                BuiltIns builtIn = BuiltIns.valueOf(cmdAndArgs[0]);
+                if(builtIn == BuiltIns.exit) {
+                    isRunning = false;
+                    continue;
+                } else {
+                    builtIn.doTask(cmdAndArgs[1]);
+                }
             } catch (IllegalArgumentException iae) {
                 Optional<File> file = checkForExecutableFileInPath(cmdAndArgs[0]);
                 if(file.isEmpty()) {
@@ -40,29 +45,6 @@ public class Main {
                     }
                 }
                 continue;
-            }
-
-            switch (builtIn) {
-                case exit -> {
-                    isRunning = false;
-                }
-                case echo -> {
-                    System.out.println(cmdAndArgs[1]);
-                }
-                case type -> {
-                    String program = cmdAndArgs[1].trim();
-                    try {
-                        BuiltIns.valueOf(program);
-                        System.out.println(program + " is a shell builtin");
-                    } catch (IllegalArgumentException iae) {
-                        Optional<File> executableFile= checkForExecutableFileInPath(program);
-                        if(executableFile.isEmpty()) {
-                            System.out.println(program + ": not found");
-                        } else {
-                            System.out.println(program + " is " + executableFile.get().getAbsolutePath());
-                        }
-                    }
-                }
             }
         }
     }
@@ -113,8 +95,36 @@ public class Main {
     }
 
     public enum BuiltIns {
-        exit,
-        echo,
-        type;
+        exit {
+            public void doTask(String args) {}
+        },
+        echo {
+            public void doTask(String args) {
+                System.out.println(args);
+            }
+        },
+        type {
+            public void doTask(String args) {
+                String program = args.trim();
+                try {
+                    BuiltIns.valueOf(program);
+                    System.out.println(program + " is a shell builtin");
+                } catch (IllegalArgumentException iae) {
+                    Optional<File> executableFile= checkForExecutableFileInPath(program);
+                    if(executableFile.isEmpty()) {
+                        System.out.println(program + ": not found");
+                    } else {
+                        System.out.println(program + " is " + executableFile.get().getAbsolutePath());
+                    }
+                }
+            }
+        },
+        pwd {
+            public void doTask(String args) {
+                System.out.println(System.getProperty("user.dir"));
+            }
+        };
+
+        public abstract void doTask(String args);
     }
 }
