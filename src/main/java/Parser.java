@@ -21,16 +21,20 @@ public class Parser {
             for(int i = 0; i < line.length(); i++) {
                 char c = line.charAt(i);
                 if(escape) {
-                    boolean isEscapable = false;
-                    for(char cc: charactersToEscapeInsideDoubleQuotes) {
-                        if(c == cc) {
-                            isEscapable = true;
-                            break;
+                    if(insideQuote && quoteValue == doubleQuote) {
+                        boolean isEscapable = false;
+                        for (char cc : charactersToEscapeInsideDoubleQuotes) {
+                            if (c == cc) {
+                                isEscapable = true;
+                                break;
+                            }
                         }
-                    }
-                    if(isEscapable) sb.append(c);
-                    else {
-                        sb.append('\\');
+                        if (isEscapable) sb.append(c);
+                        else {
+                            sb.append('\\');
+                            sb.append(c);
+                        }
+                    } else {
                         sb.append(c);
                     }
                     escape = false;
