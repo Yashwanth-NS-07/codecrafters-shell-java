@@ -19,24 +19,21 @@ public class Parser {
             String line = scanner.nextLine();
             for(int i = 0; i < line.length(); i++) {
                 char c = line.charAt(i);
-                if(insideQuote) {
-                    if(c == quoteValue && !escape) {
+                if(escape) {
+                    sb.append(c);
+                    escape = false;
+                } else if(insideQuote) {
+                    if(c == quoteValue) {
                         if(i == line.length()-1) {
                             args.add(sb.toString());
                             sb.delete(0, sb.length());
                         }
                         insideQuote = false;
-                    } else if(escape) {
-                        sb.append(c);
-                        escape = false;
                     } else if(quoteValue == doubleQuote && c == backslash) {
                         escape = true;
                     } else {
                         sb.append(c);
                     }
-                } else if(escape) {
-                    sb.append(c);
-                    escape = false;
                 } else {
                     if(c == singleQuote || c == doubleQuote) {
                         quoteValue = c == singleQuote? singleQuote: doubleQuote;
