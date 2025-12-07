@@ -5,6 +5,7 @@ public class Parser {
     private char singleQuote = '\'';
     private char doubleQuote = '"';
     private char backslash = '\\';
+    private char[] charactersToEscapeInsideDoubleQuotes = { '"', '\\', '$', '`'};
     public Parser(Scanner scanner) {
         parse(scanner);
     }
@@ -20,7 +21,18 @@ public class Parser {
             for(int i = 0; i < line.length(); i++) {
                 char c = line.charAt(i);
                 if(escape) {
-                    sb.append(c);
+                    boolean isEscapable = false;
+                    for(char cc: charactersToEscapeInsideDoubleQuotes) {
+                        if(c == cc) {
+                            isEscapable = true;
+                            break;
+                        }
+                    }
+                    if(isEscapable) sb.append(c);
+                    else {
+                        sb.append('\\');
+                        sb.append(c);
+                    }
                     escape = false;
                 } else if(insideQuote) {
                     if(c == quoteValue) {
