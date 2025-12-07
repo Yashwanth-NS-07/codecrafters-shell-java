@@ -28,7 +28,10 @@ public class Parser {
                     } else {
                         sb.append(c);
                     }
-                } else {
+                } else if(escape) {
+                    sb.append(c);
+                    escape = false;
+                }else {
                     if(c == singleQuote || c == doubleQuote) {
                         quoteValue = c == singleQuote? singleQuote: doubleQuote;
                         insideQuote = true;
@@ -36,12 +39,7 @@ public class Parser {
                         if(!sb.isEmpty()) args.add(sb.toString());
                         sb.delete(0, sb.length());
                     } else if(c == '\\') {
-                        if(escape) {
-                            escape = false;
-                            sb.append(c);
-                        } else {
-                            escape = true;
-                        }
+                        escape = true;
                     } else {
                         sb.append(c);
                     }
