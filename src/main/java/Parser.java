@@ -3,12 +3,14 @@ import java.util.*;
 public class Parser {
     private List<String> args = new ArrayList<>();
     private char singleQuote = '\'';
+    private char doubleQuote = '"';
     public Parser(Scanner scanner) {
         parse(scanner);
     }
     private void parse(Scanner scanner) {
         boolean isDone = false;
         boolean insideQuote = false;
+        char quoteValue = 0;
         StringBuilder sb = new StringBuilder();
         while(!isDone) {
             if(insideQuote) System.out.print("> ");
@@ -16,7 +18,7 @@ public class Parser {
             for(int i = 0; i < line.length(); i++) {
                 char c = line.charAt(i);
                 if(insideQuote) {
-                    if(c == '\'') {
+                    if(c == quoteValue) {
                         if(i == line.length()-1) {
                             args.add(sb.toString());
                             sb.delete(0, sb.length());
@@ -26,7 +28,8 @@ public class Parser {
                         sb.append(c);
                     }
                 } else {
-                    if(c == '\'') {
+                    if(c == singleQuote || c == doubleQuote) {
+                        quoteValue = c == singleQuote? singleQuote: doubleQuote;
                         insideQuote = true;
                     } else if(c == ' ') {
                         if(!sb.isEmpty()) args.add(sb.toString());
