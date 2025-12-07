@@ -10,6 +10,7 @@ public class Parser {
     private void parse(Scanner scanner) {
         boolean isDone = false;
         boolean insideQuote = false;
+        boolean escape = false;
         char quoteValue = 0;
         StringBuilder sb = new StringBuilder();
         while(!isDone) {
@@ -34,6 +35,13 @@ public class Parser {
                     } else if(c == ' ') {
                         if(!sb.isEmpty()) args.add(sb.toString());
                         sb.delete(0, sb.length());
+                    } else if(c == '\\') {
+                        if(escape) {
+                            escape = false;
+                            sb.append(c);
+                        } else {
+                            escape = true;
+                        }
                     } else {
                         sb.append(c);
                     }
