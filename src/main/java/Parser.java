@@ -4,6 +4,7 @@ public class Parser {
     private List<String> args = new ArrayList<>();
     private char singleQuote = '\'';
     private char doubleQuote = '"';
+    private char backslash = '\\';
     public Parser(Scanner scanner) {
         parse(scanner);
     }
@@ -19,26 +20,31 @@ public class Parser {
             for(int i = 0; i < line.length(); i++) {
                 char c = line.charAt(i);
                 if(insideQuote) {
-                    if(c == quoteValue) {
+                    if(c == quoteValue && !escape) {
                         if(i == line.length()-1) {
                             args.add(sb.toString());
                             sb.delete(0, sb.length());
                         }
                         insideQuote = false;
+                    } else if(escape) {
+                        sb.append(c);
+                        escape = false;
+                    } else if(quoteValue == doubleQuote && c == backslash) {
+                        escape = true;
                     } else {
                         sb.append(c);
                     }
                 } else if(escape) {
                     sb.append(c);
                     escape = false;
-                }else {
+                } else {
                     if(c == singleQuote || c == doubleQuote) {
                         quoteValue = c == singleQuote? singleQuote: doubleQuote;
                         insideQuote = true;
                     } else if(c == ' ') {
                         if(!sb.isEmpty()) args.add(sb.toString());
                         sb.delete(0, sb.length());
-                    } else if(c == '\\') {
+                    } else if(c == backslash) {
                         escape = true;
                     } else {
                         sb.append(c);
