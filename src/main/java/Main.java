@@ -72,16 +72,16 @@ public class Main {
                 if(output != null && output.output != null && !output.output.isEmpty()) {
                     process.getOutputStream().write(output.output.getBytes(StandardCharsets.UTF_8));
                 }
+                process.waitFor();
                 if(isLast) {
                     System.out.println(new String(process.getInputStream().readAllBytes()));
                 }
 
-                process.waitFor();
             }
         }
     }
 
-    private static void runProcessParallelly(List<Program> programs) throws IOException {
+    private static void runProcessParallelly(List<Program> programs) throws IOException, InterruptedException {
         List<ProcessBuilder> processBuilders = new ArrayList<>();
         for(Program program: programs) {
             if(checkForExecutableFileInPath(program.getProgram()).isEmpty()) {
@@ -97,18 +97,11 @@ public class Main {
             }
             processBuilders.add(pb);
         }
-        try {
-            List<Process> processes = ProcessBuilder.startPipeline(processBuilders);
-            processes.forEach(process -> {
-                try {
-                    process.waitFor();
-                } catch (InterruptedException e) {
-                    throw new RuntimeException(e);
-                }
-            });
-        } catch (IOException e) {
-            throw new RuntimeException(e);
+        List<Process> processes = ProcessBuilder.startPipeline(processBuilders);
+        for(int i = 0; i < processes.size(); i++) {
+            processes.get(i).waitFor();
         }
+        System.out.println();
     }
 
     private static File maybeCreateFile(String fileName, boolean isAppend) throws IOException {
