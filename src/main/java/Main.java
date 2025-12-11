@@ -47,7 +47,7 @@ public class Main {
             if(isBuiltin) {
                 output = BuiltIns.valueOf(program.getProgram()).doTask(program.getArgs());
                 if(isLast && program.getWriteTo().isEmpty()) {
-                    System.out.println(output.output);
+                    if(!output.output.isEmpty()) System.out.println(output.output);
                     if(output.errorOutput != null && !output.errorOutput.isEmpty()) {
                         System.err.print(output.errorOutput);
                     }
@@ -83,7 +83,8 @@ public class Main {
 
     private static void runProcessParallelly(List<Program> programs) throws IOException, InterruptedException {
         List<ProcessBuilder> processBuilders = new ArrayList<>();
-        for(Program program: programs) {
+        for(int i = 0; i < programs.size(); i++) {
+            Program program =  programs.get(i);
             if(checkForExecutableFileInPath(program.getProgram()).isEmpty()) {
                 System.out.println(program.getProgram() + ": command not found");
                 break;
@@ -94,14 +95,19 @@ public class Main {
             Optional<String> writeTo = program.getWriteTo();
             if(writeTo.isPresent()) {
                 pb = pb.redirectOutput(maybeCreateFile(writeTo.get(), program.getIsAppend()));
+            } else if(i == programs.size()-1) {
+                pb.redirectOutput(ProcessBuilder.Redirect.PIPE);
             }
             processBuilders.add(pb);
         }
         List<Process> processes = ProcessBuilder.startPipeline(processBuilders);
         for(int i = 0; i < processes.size(); i++) {
             processes.get(i).waitFor();
+            if(i == processes.size()-1) {
+                String output = new String(processes.get(i).getInputStream().readAllBytes());
+                if(!output.isEmpty()) System.out.println(output);
+            }
         }
-        System.out.println();
     }
 
     private static File maybeCreateFile(String fileName, boolean isAppend) throws IOException {
