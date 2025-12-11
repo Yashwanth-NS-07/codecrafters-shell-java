@@ -55,7 +55,7 @@ public class Main {
                     try(PrintWriter writer = new PrintWriter(
                             new BufferedWriter(
                                 new FileWriter(program.getWriteTo().get(), program.getIsAppend())))) {
-                            writer.print(output.output);
+                            writer.println(output.output);
                     }
                 }
             } else {
@@ -107,7 +107,7 @@ public class Main {
             processes.get(i).waitFor();
             if(i == processes.size()-1) {
                 String output = new String(processes.get(i).getInputStream().readAllBytes());
-                if(!output.isEmpty()) System.out.println(output);
+                if(!output.isEmpty()) System.out.print(output);
             }
         }
     }
