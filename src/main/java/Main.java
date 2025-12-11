@@ -67,6 +67,8 @@ public class Main {
                 processBuilder.inheritIO();
                 if(program.getWriteTo().isPresent()) {
                     processBuilder.redirectOutput(maybeCreateFile(program.getWriteTo().get(), program.getIsAppend()));
+                } else if(isLast) {
+                    processBuilder.redirectOutput(ProcessBuilder.Redirect.PIPE);
                 }
                 Process process = processBuilder.start();
                 if(output != null && output.output != null && !output.output.isEmpty()) {
