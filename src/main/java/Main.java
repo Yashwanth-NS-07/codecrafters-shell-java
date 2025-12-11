@@ -49,7 +49,7 @@ public class Main {
                 if(isLast && program.getWriteTo().isEmpty()) {
                     if(!output.output.isEmpty()) System.out.println(output.output);
                     if(output.errorOutput != null && !output.errorOutput.isEmpty()) {
-                        System.err.print(output.errorOutput);
+                        System.err.println(output.errorOutput);
                     }
                 } else if(program.getWriteTo().isPresent()) {
                     try(PrintWriter writer = new PrintWriter(
