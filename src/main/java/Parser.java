@@ -53,10 +53,14 @@ public class Parser {
                         if(sb.isEmpty()) continue;
                         else {
                             outputRedirect = false;
+                            isAppend = false;
                             writeTo = sb.toString();
                             sb.delete(0, sb.length());
                         }
                     } else if(c == '>') {
+                        if(sb.equals("1>") || sb.equals(">")) {
+                            isAppend = true;
+                        }
                     } else if(c == '|') {
                     } else {
                         sb.append(c);
