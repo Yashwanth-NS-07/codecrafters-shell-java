@@ -6,18 +6,24 @@ public class Program {
     private final String[] args;
     private final String writeTo;
     private final boolean isAppend;
+    private final String writeErrorTo;
+    private final boolean isErrorAppend;
 
-    public Program(List<String> args, String writeTo, boolean isAppend) {
+    public Program(List<String> args, String writeTo, boolean isAppend, String writeErrorTo, boolean isErrorAppend) {
         this.program = args.remove(0);
         this.args = args.toArray(new String[0]);
         this.writeTo = writeTo;
         this.isAppend = isAppend;
+        this.writeErrorTo = writeErrorTo;
+        this.isErrorAppend = isErrorAppend;
     }
 
     public String getProgram() { return this.program; }
     public String[] getArgs() { return this.args; }
     public Optional<String> getWriteTo() { return Optional.ofNullable(writeTo); }
     public boolean getIsAppend() { return this.isAppend; }
+    public Optional<String> getWriteErrorTo() { return Optional.ofNullable(this.writeErrorTo); }
+    public boolean getIsErrorAppend() { return this.isErrorAppend; }
     public String[] getProgramAndArgs() {
         String[] programAndArgs = new String[args.length + 1];
         programAndArgs[0] = program;

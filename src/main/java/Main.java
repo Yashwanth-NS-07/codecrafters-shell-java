@@ -46,16 +46,26 @@ public class Main {
             boolean isBuiltin = checkForBuiltins(List.of(programs.get(i)));
             if(isBuiltin) {
                 output = BuiltIns.valueOf(program.getProgram()).doTask(program.getArgs());
-                if(isLast && program.getWriteTo().isEmpty()) {
-                    if(!output.output.isEmpty()) System.out.println(output.output);
-                    if(output.errorOutput != null && !output.errorOutput.isEmpty()) {
-                        System.err.println(output.errorOutput);
-                    }
-                } else if(program.getWriteTo().isPresent()) {
+                if(program.getWriteTo().isPresent()) {
                     try(PrintWriter writer = new PrintWriter(
                             new BufferedWriter(
                                 new FileWriter(program.getWriteTo().get(), program.getIsAppend())))) {
                             writer.println(output.output);
+                    }
+                } else if(isLast) {
+                    if(output.output != null && !output.output.isEmpty()) {
+                        System.out.println(output.output);
+                    }
+                }
+                if(program.getWriteErrorTo().isPresent()) {
+                    try(PrintWriter writer = new PrintWriter(
+                            new BufferedWriter(
+                                    new FileWriter(program.getWriteErrorTo().get(), program.getIsErrorAppend())))) {
+                        writer.println(output.errorOutput);
+                    }
+                }else if(isLast) {
+                    if(output.errorOutput != null && !output.errorOutput.isEmpty()) {
+                        System.err.println(output.errorOutput);
                     }
                 }
             } else {
@@ -70,13 +80,23 @@ public class Main {
                 } else if(isLast) {
                     processBuilder.redirectOutput(ProcessBuilder.Redirect.PIPE);
                 }
+                if(program.getWriteErrorTo().isPresent()) {
+                    processBuilder.redirectError(maybeCreateFile(program.getWriteErrorTo().get(), program.getIsErrorAppend()));
+                } else if(isLast) {
+                    processBuilder.redirectError(ProcessBuilder.Redirect.PIPE);
+                }
                 Process process = processBuilder.start();
                 if(output != null && output.output != null && !output.output.isEmpty()) {
                     process.getOutputStream().write(output.output.getBytes(StandardCharsets.UTF_8));
                 }
                 process.waitFor();
                 if(isLast) {
-                    System.out.println(new String(process.getInputStream().readAllBytes()));
+                    if(program.getWriteTo().isEmpty()) {
+                        System.out.println(new String(process.getInputStream().readAllBytes()));
+                    }
+                    if(program.getWriteErrorTo().isEmpty()) {
+                        System.err.println(new String(process.getErrorStream().readAllBytes()));
+                    }
                 }
 
             }
@@ -95,10 +115,16 @@ public class Main {
             pb = pb.command(List.of(program.getProgramAndArgs()));
             pb = pb.inheritIO();
             Optional<String> writeTo = program.getWriteTo();
+            Optional<String> writeErrorTo = program.getWriteErrorTo();
             if(writeTo.isPresent()) {
                 pb = pb.redirectOutput(maybeCreateFile(writeTo.get(), program.getIsAppend()));
             } else if(i == programs.size()-1) {
                 pb.redirectOutput(ProcessBuilder.Redirect.PIPE);
+            }
+            if(writeErrorTo.isPresent()) {
+                pb.redirectError(maybeCreateFile(writeErrorTo.get(), program.getIsErrorAppend()));
+            } else {
+                pb.redirectError(ProcessBuilder.Redirect.PIPE);
             }
             processBuilders.add(pb);
         }
@@ -108,6 +134,8 @@ public class Main {
             if(i == processes.size()-1) {
                 String output = new String(processes.get(i).getInputStream().readAllBytes());
                 if(!output.isEmpty()) System.out.print(output);
+                String error = new String(processes.get(i).getErrorStream().readAllBytes());
+                if(!error.isEmpty()) System.out.print(error);
             }
         }
     }

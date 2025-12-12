@@ -16,9 +16,12 @@ public class Parser {
         boolean insideQuote = false;
         boolean escape = false;
         char quoteValue = 0;
-        boolean overrideAppender = false;
-        String writeTo = null;
+        boolean outputRedirect = false;
         boolean isAppend = false;
+        String writeTo = null;
+        boolean errorRedirect = false;
+        String writeErrorTo = null;
+        boolean isErrorAppend = false;
 
         List<String> args = new ArrayList<>();
         StringBuilder sb = new StringBuilder();
@@ -45,16 +48,31 @@ public class Parser {
                     } else {
                         sb.append(c);
                     }
-                } else if(overrideAppender) {
+                } else if(outputRedirect) {
                     if(c == ' ') {
                         if(sb.isEmpty()) continue;
                         else {
-                            overrideAppender = false;
+                            outputRedirect = false;
                             writeTo = sb.toString();
                             sb.delete(0, sb.length());
                         }
                     } else if(c == '>') {
                     } else if(c == '|') {
+                    } else {
+                        sb.append(c);
+                    }
+                } else if(errorRedirect) {
+                    if (c == ' ') {
+                        if(sb.isEmpty()) continue;
+                        else {
+                            errorRedirect = false;
+                            writeErrorTo = sb.toString();
+                            sb.delete(0, sb.length());
+                        }
+                    } else if(c == '>') {
+
+                    } else if(c == '|') {
+
                     } else {
                         sb.append(c);
                     }
@@ -80,12 +98,19 @@ public class Parser {
                     } else if(c == '>') {
                         if(!sb.isEmpty()) {
                             String s = sb.toString().trim();
-                            if(!s.isEmpty() && !s.equals("1")) {
-                                args.add(s);
+                            if(!s.isEmpty()) {
+                                if(s.equals("2")) {
+                                    errorRedirect = true;
+                                } else if(s.equals("1")) {
+                                    outputRedirect = true;
+                                } else {
+                                    sb.append(s);
+                                }
                             }
                             sb.delete(0, sb.length());
+                        } else {
+                            outputRedirect = true;
                         }
-                        overrideAppender = true;
                     } else if(c == backslash) {
                         escape = true;
                     } else {
@@ -94,17 +119,21 @@ public class Parser {
                 }
             }
 
-            if(overrideAppender && sb.isEmpty()) {
+            if((errorRedirect || outputRedirect) && sb.isEmpty()) {
                 throw new IllegalArgumentException("syntax error near unexpected token `newline'");
             } else if(!insideQuote) {
                 isDone = true;
-                if(overrideAppender) {
+                if(outputRedirect) {
                     writeTo = sb.toString();
                     sb.delete(0, sb.length());
+                } else if(errorRedirect) {
+                    writeErrorTo = sb.toString();
+                    sb.delete(0, sb.length());
                 }
+
                 if(!sb.isEmpty()) args.add(sb.toString());
                 if(!args.isEmpty()) {
-                    programs.add(new Program(args, writeTo, isAppend));
+                    programs.add(new Program(args, writeTo, isAppend, writeErrorTo, isErrorAppend));
                 }
             }
         }

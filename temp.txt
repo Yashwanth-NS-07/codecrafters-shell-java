@@ -1,1 +1,1 @@
-hello
+cat: a: No such file or directory
