@@ -57,11 +57,11 @@ public class Main {
                         System.out.println(output.output);
                     }
                 }
-                if(program.getWriteErrorTo().isPresent() && !output.errorOutput.isEmpty()) {
+                if(program.getWriteErrorTo().isPresent()) {
                     try(PrintWriter writer = new PrintWriter(
                             new BufferedWriter(
                                     new FileWriter(program.getWriteErrorTo().get(), program.getIsErrorAppend())))) {
-                        writer.println(output.errorOutput);
+                        writer.print(output.errorOutput);
                     }
                 }else if(isLast) {
                     if(output.errorOutput != null && !output.errorOutput.isEmpty()) {
