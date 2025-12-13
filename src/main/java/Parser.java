@@ -58,7 +58,7 @@ public class Parser {
                             sb.delete(0, sb.length());
                         }
                     } else if(c == '>') {
-                        if(sb.equals("1>") || sb.equals(">")) {
+                        if(sb.equals("1") || sb.isEmpty()) {
                             isAppend = true;
                         }
                     } else if(c == '|') {
