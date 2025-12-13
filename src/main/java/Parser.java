@@ -73,7 +73,7 @@ public class Parser {
                             sb.delete(0, sb.length());
                         }
                     } else if(c == '>') {
-                        if(sb.equals("2")) {
+                        if(sb.isEmpty()) {
                             isErrorAppend = true;
                         }
                     } else if(c == '|') {
