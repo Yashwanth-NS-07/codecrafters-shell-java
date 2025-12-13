@@ -111,18 +111,26 @@ public class Main {
                 System.out.println(program.getProgram() + ": command not found");
                 break;
             }
-            ProcessBuilder pb = new ProcessBuilder();
-            pb = pb.command(List.of(program.getProgramAndArgs()));
-            pb = pb.inheritIO();
+            ProcessBuilder pb = new ProcessBuilder()
+                    .command(List.of(program.getProgramAndArgs()))
+                    .inheritIO();
             Optional<String> writeTo = program.getWriteTo();
             Optional<String> writeErrorTo = program.getWriteErrorTo();
             if(writeTo.isPresent()) {
-                pb = pb.redirectOutput(maybeCreateFile(writeTo.get(), program.getIsAppend()));
+                if(program.getIsAppend()) {
+                    pb.redirectOutput(ProcessBuilder.Redirect.appendTo(new File(writeTo.get())));
+                } else {
+                    pb.redirectOutput(ProcessBuilder.Redirect.to(new File(writeTo.get())));
+                }
             } else if(i == programs.size()-1) {
                 pb.redirectOutput(ProcessBuilder.Redirect.PIPE);
             }
             if(writeErrorTo.isPresent()) {
-                pb.redirectError(maybeCreateFile(writeErrorTo.get(), program.getIsErrorAppend()));
+                if(program.getIsErrorAppend()) {
+                    pb.redirectError(ProcessBuilder.Redirect.appendTo(new File(writeErrorTo.get())));
+                } else {
+                    pb.redirectError(ProcessBuilder.Redirect.to(new File(writeErrorTo.get())));
+                }
             } else {
                 pb.redirectError(ProcessBuilder.Redirect.PIPE);
             }

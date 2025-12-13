@@ -53,7 +53,6 @@ public class Parser {
                         if(sb.isEmpty()) continue;
                         else {
                             outputRedirect = false;
-                            isAppend = false;
                             writeTo = sb.toString();
                             sb.delete(0, sb.length());
                         }
@@ -104,8 +103,10 @@ public class Parser {
                             String s = sb.toString().trim();
                             if(!s.isEmpty()) {
                                 if(s.equals("2")) {
+                                    isErrorAppend = false;
                                     errorRedirect = true;
                                 } else if(s.equals("1")) {
+                                    isAppend = false;
                                     outputRedirect = true;
                                 } else {
                                     sb.append(s);
@@ -113,6 +114,7 @@ public class Parser {
                             }
                             sb.delete(0, sb.length());
                         } else {
+                            isAppend = false;
                             outputRedirect = true;
                         }
                     } else if(c == backslash) {
