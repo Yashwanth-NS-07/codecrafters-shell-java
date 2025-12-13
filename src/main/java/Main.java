@@ -138,12 +138,20 @@ public class Main {
         }
         List<Process> processes = ProcessBuilder.startPipeline(processBuilders);
         for(int i = 0; i < processes.size(); i++) {
-            processes.get(i).waitFor();
             if(i == processes.size()-1) {
-                String output = new String(processes.get(i).getInputStream().readAllBytes());
-                if(!output.isEmpty()) System.out.print(output);
-                String error = new String(processes.get(i).getErrorStream().readAllBytes());
-                if(!error.isEmpty()) System.out.print(error);
+                Process process = processes.get(i);
+//                String output = new String(processes.get(i).getInputStream().readAllBytes());
+//                if(!output.isEmpty()) System.out.print(output);
+//                String error = new String(processes.get(i).getErrorStream().readAllBytes());
+//                if(!error.isEmpty()) System.out.print(error);
+                byte[] bytes = new byte[1024];
+                int count;
+                while((count = process.getInputStream().read(bytes)) != -1) {
+                    System.out.print(new String(bytes, 0, count));
+                }
+                while((count = process.getErrorStream().read(bytes)) != -1) {
+                    System.err.print(new String(bytes, 0, count));
+                }
             }
         }
     }
