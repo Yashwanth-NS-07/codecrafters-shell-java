@@ -1,17 +1,33 @@
+import org.jline.reader.LineReader;
+import org.jline.reader.LineReaderBuilder;
+import org.jline.reader.impl.completer.StringsCompleter;
+import org.jline.terminal.Terminal;
+
+import java.io.IOException;
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class Parser {
-    private List<Program> programs = new ArrayList<>();
+    private Terminal terminal;
+    private LineReader lineReader;
     private char singleQuote = '\'';
     private char doubleQuote = '"';
     private char backslash = '\\';
     private char[] charactersToEscapeInsideDoubleQuotes = { doubleQuote, backslash, '$', '`'};
 
-    public Parser(Scanner scanner) {
-        parse(scanner);
+    public Parser(Terminal terminal) {
+        List<String> builtIns = new ArrayList<>();
+        Arrays.stream(Main.BuiltIns.values()).forEach(b -> builtIns.add(b.toString()));
+        StringsCompleter stringsCompleter = new StringsCompleter(builtIns);
+        LineReaderBuilder lineReaderBuilder = LineReaderBuilder.builder()
+                .completer(stringsCompleter)
+                .terminal(terminal);
+        this.terminal = terminal;
+        this.lineReader = lineReaderBuilder.build();
     }
 
-    private void parse(Scanner scanner) {
+    public List<Program> takeInput() throws IOException {
+        List<Program> programs = new ArrayList<>();
         boolean isDone = false;
         boolean insideQuote = false;
         boolean escape = false;
@@ -23,13 +39,17 @@ public class Parser {
         String writeErrorTo = null;
         boolean isErrorAppend = false;
 
+        terminal.writer().print("$ ");
+        terminal.writer().flush();
+
         List<String> args = new ArrayList<>();
         StringBuilder sb = new StringBuilder();
         while(!isDone) {
-            if(insideQuote) System.out.print("> ");
-            String line = scanner.nextLine();
-            for(int i = 0; i < line.length(); i++) {
-                char c = line.charAt(i);
+            if(insideQuote) {
+                terminal.writer().print("> ");
+                terminal.writer().flush();
+            }
+            for(char c: lineReader.readLine().toCharArray()) {
                 if(escape) {
                     escape = false;
                     if(insideQuote && quoteValue == doubleQuote) {
@@ -83,10 +103,6 @@ public class Parser {
                     }
                 } else if(insideQuote) {
                     if(c == quoteValue) {
-                        if(i == line.length()-1) {
-                            args.add(sb.toString());
-                            sb.delete(0, sb.length());
-                        }
                         insideQuote = false;
                     } else if(quoteValue == doubleQuote && c == backslash) {
                         escape = true;
@@ -111,7 +127,8 @@ public class Parser {
                                     isAppend = false;
                                     outputRedirect = true;
                                 } else {
-                                    sb.append(s);
+                                    args.add(s);
+                                    outputRedirect = true;
                                 }
                             }
                             sb.delete(0, sb.length());
@@ -145,10 +162,6 @@ public class Parser {
                 }
             }
         }
-
-    }
-
-    public List<Program> getPrograms() {
-        return this.programs;
+        return programs;
     }
 }

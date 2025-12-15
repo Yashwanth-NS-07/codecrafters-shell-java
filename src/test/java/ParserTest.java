@@ -11,7 +11,7 @@ public class ParserTest {
                 "\"java\" \"-jar\" \"'a ' 'a'\" '\"a a a\"'"
         };
         for(String input: inputs) {
-            Parser parser = new Parser(new Scanner(new ByteArrayInputStream(input.getBytes())));
+//            Parser parser = new Parser(new Scanner(new ByteArrayInputStream(input.getBytes())));
 //            System.out.println("Program: " + parser.getProgram());
 //            int k = 1;
 //            for (String arg : parser.getArgs()) {

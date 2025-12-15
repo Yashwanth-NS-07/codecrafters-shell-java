@@ -1,3 +1,6 @@
+import org.jline.terminal.Terminal;
+import org.jline.terminal.TerminalBuilder;
+
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
@@ -5,24 +8,29 @@ import java.util.*;
 public class Main {
     private static boolean isRunning = true;
     private static String PATH = "PATH";
-    private static Scanner scanner = null;
+    private static Parser parser;
 
     public static void main(String[] args) {
 
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
             isRunning = false;
         }));
-        scanner = new Scanner(System.in);
-        startShell();
-        scanner.close();
+        try {
+            parser = new Parser(setupTerminal());
+            startShell();
+        } catch (IOException e) {
+            System.err.println("Failed to start shell: " + e.getMessage());
+        }
+    }
+    private static Terminal setupTerminal() throws IOException {
+        TerminalBuilder terminalBuilder = TerminalBuilder.builder().system(true);
+        return terminalBuilder.build();
     }
 
-    public static void startShell() {
+    public static void startShell() throws IOException {
         while(isRunning) {
             System.err.flush();
-            System.out.print("$ ");
-            Parser parser = new Parser(scanner);
-            List<Program> programs = parser.getPrograms();
+            List<Program> programs = parser.takeInput();
             if(programs.isEmpty()) continue;
             boolean hasBuiltins = checkForBuiltins(programs);
             try {
@@ -76,38 +84,33 @@ public class Main {
                 ProcessBuilder processBuilder = new ProcessBuilder(program.getProgramAndArgs());
                 processBuilder.inheritIO();
                 if(program.getWriteTo().isPresent()) {
-                    processBuilder.redirectOutput(maybeCreateFile(program.getWriteTo().get(), program.getIsAppend()));
-                } else if(isLast) {
-                    processBuilder.redirectOutput(ProcessBuilder.Redirect.PIPE);
+                    if(program.getIsAppend()) {
+                        processBuilder.redirectOutput(ProcessBuilder.Redirect.appendTo(new File(program.getWriteTo().get())));
+                    } else {
+                        processBuilder.redirectOutput(ProcessBuilder.Redirect.to(new File(program.getWriteTo().get())));
+                    }
+
                 }
                 if(program.getWriteErrorTo().isPresent()) {
-                    processBuilder.redirectError(maybeCreateFile(program.getWriteErrorTo().get(), program.getIsErrorAppend()));
-                } else if(isLast) {
-                    processBuilder.redirectError(ProcessBuilder.Redirect.PIPE);
+                    if(program.getIsErrorAppend()) {
+                        processBuilder.redirectError(ProcessBuilder.Redirect.appendTo(new File(program.getWriteErrorTo().get())));
+                    } else {
+                        processBuilder.redirectError(ProcessBuilder.Redirect.to(new File(program.getWriteErrorTo().get())));
+                    }
                 }
                 Process process = processBuilder.start();
                 if(output != null && output.output != null && !output.output.isEmpty()) {
                     process.getOutputStream().write(output.output.getBytes(StandardCharsets.UTF_8));
                 }
                 process.waitFor();
-                if(isLast) {
-                    if(program.getWriteTo().isEmpty()) {
-                        System.out.println(new String(process.getInputStream().readAllBytes()));
-                    }
-                    if(program.getWriteErrorTo().isEmpty()) {
-                        System.err.println(new String(process.getErrorStream().readAllBytes()));
-                    }
-                }
-
             }
         }
     }
 
     private static void runProcessParallelly(List<Program> programs) throws IOException, InterruptedException {
         List<ProcessBuilder> processBuilders = new ArrayList<>();
-        for(int i = 0; i < programs.size(); i++) {
-            Program program =  programs.get(i);
-            if(checkForExecutableFileInPath(program.getProgram()).isEmpty()) {
+        for (Program program : programs) {
+            if (checkForExecutableFileInPath(program.getProgram()).isEmpty()) {
                 System.out.println(program.getProgram() + ": command not found");
                 break;
             }
@@ -116,42 +119,26 @@ public class Main {
                     .inheritIO();
             Optional<String> writeTo = program.getWriteTo();
             Optional<String> writeErrorTo = program.getWriteErrorTo();
-            if(writeTo.isPresent()) {
-                if(program.getIsAppend()) {
+            if (writeTo.isPresent()) {
+                if (program.getIsAppend()) {
                     pb.redirectOutput(ProcessBuilder.Redirect.appendTo(new File(writeTo.get())));
                 } else {
                     pb.redirectOutput(ProcessBuilder.Redirect.to(new File(writeTo.get())));
                 }
-            } else if(i == programs.size()-1) {
-                pb.redirectOutput(ProcessBuilder.Redirect.PIPE);
             }
-            if(writeErrorTo.isPresent()) {
-                if(program.getIsErrorAppend()) {
+            if (writeErrorTo.isPresent()) {
+                if (program.getIsErrorAppend()) {
                     pb.redirectError(ProcessBuilder.Redirect.appendTo(new File(writeErrorTo.get())));
                 } else {
                     pb.redirectError(ProcessBuilder.Redirect.to(new File(writeErrorTo.get())));
                 }
-            } else {
-                pb.redirectError(ProcessBuilder.Redirect.PIPE);
             }
             processBuilders.add(pb);
         }
         List<Process> processes = ProcessBuilder.startPipeline(processBuilders);
         for(int i = 0; i < processes.size(); i++) {
             if(i == processes.size()-1) {
-                Process process = processes.get(i);
-//                String output = new String(processes.get(i).getInputStream().readAllBytes());
-//                if(!output.isEmpty()) System.out.print(output);
-//                String error = new String(processes.get(i).getErrorStream().readAllBytes());
-//                if(!error.isEmpty()) System.out.print(error);
-                byte[] bytes = new byte[1024];
-                int count;
-                while((count = process.getInputStream().read(bytes)) != -1) {
-                    System.out.print(new String(bytes, 0, count));
-                }
-                while((count = process.getErrorStream().read(bytes)) != -1) {
-                    System.err.print(new String(bytes, 0, count));
-                }
+                processes.get(i).waitFor();
             }
         }
     }
