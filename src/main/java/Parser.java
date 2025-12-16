@@ -39,17 +39,14 @@ public class Parser {
         String writeErrorTo = null;
         boolean isErrorAppend = false;
 
-        terminal.writer().print("$ ");
-        terminal.writer().flush();
-
+        String prompt = "$ ";
         List<String> args = new ArrayList<>();
         StringBuilder sb = new StringBuilder();
         while(!isDone) {
             if(insideQuote) {
-                terminal.writer().print("> ");
-                terminal.writer().flush();
+                prompt = "> ";
             }
-            for(char c: lineReader.readLine().toCharArray()) {
+            for(char c: lineReader.readLine(prompt).toCharArray()) {
                 if(escape) {
                     escape = false;
                     if(insideQuote && quoteValue == doubleQuote) {
