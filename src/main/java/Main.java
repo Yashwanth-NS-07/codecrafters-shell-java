@@ -23,7 +23,7 @@ public class Main {
         }
     }
     private static Terminal setupTerminal() throws IOException {
-        TerminalBuilder terminalBuilder = TerminalBuilder.builder().system(true);
+        TerminalBuilder terminalBuilder = TerminalBuilder.builder();
         return terminalBuilder.build();
     }
 
