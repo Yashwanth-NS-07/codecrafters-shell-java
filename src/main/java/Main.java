@@ -7,8 +7,9 @@ import java.util.*;
 
 public class Main {
     private static boolean isRunning = true;
-    private static String PATH = "PATH";
+    private static final String PATH = "PATH";
     private static Parser parser;
+    private static final Map<String, File> executablesInPath = new Hashtable<>();
 
     public static void main(String[] args) {
 
@@ -16,10 +17,29 @@ public class Main {
             isRunning = false;
         }));
         try {
-            parser = new Parser(setupTerminal());
+            init();
+            parser = new Parser(setupTerminal(),  executablesInPath);
             startShell();
         } catch (IOException e) {
             System.err.println("Failed to start shell: " + e.getMessage());
+        }
+    }
+    private static void init() {
+        // adding executables
+        executablesInPath.clear();
+        String path = System.getenv(PATH);
+        String[] dirs = path.split(File.pathSeparator);
+        for(String dir: dirs) {
+            checkForExecutables(new File(dir));
+        }
+    }
+    private static void checkForExecutables(File file) {
+        if(isExecutableFile(file)) {
+            executablesInPath.put(file.getName(), file);
+        } else if(file.isDirectory()) {
+            for(File internalFile: file.listFiles()) {
+                checkForExecutables(internalFile);
+            }
         }
     }
     private static Terminal setupTerminal() throws IOException {

@@ -1,29 +1,38 @@
+import org.jline.builtins.Completers;
+import org.jline.reader.Completer;
 import org.jline.reader.LineReader;
 import org.jline.reader.LineReaderBuilder;
 import org.jline.reader.impl.DefaultParser;
+import org.jline.reader.impl.completer.AggregateCompleter;
 import org.jline.reader.impl.completer.StringsCompleter;
 import org.jline.terminal.Terminal;
 
+import java.io.File;
 import java.io.IOException;
+import java.nio.file.Paths;
 import java.util.*;
 import java.util.stream.Collectors;
 
 public class Parser {
     private Terminal terminal;
     private LineReader lineReader;
-    private char singleQuote = '\'';
-    private char doubleQuote = '"';
-    private char backslash = '\\';
-    private char[] charactersToEscapeInsideDoubleQuotes = { doubleQuote, backslash, '$', '`'};
+    private final char singleQuote = '\'';
+    private final char doubleQuote = '"';
+    private final char backslash = '\\';
+    private final char[] charactersToEscapeInsideDoubleQuotes = { doubleQuote, backslash, '$', '`'};
 
-    public Parser(Terminal terminal) {
+    public Parser(Terminal terminal, Map<String, File> executablesInPath) {
         List<String> builtIns = new ArrayList<>();
         Arrays.stream(Main.BuiltIns.values()).forEach(b -> builtIns.add(b.toString()));
         StringsCompleter stringsCompleter = new StringsCompleter(builtIns);
         DefaultParser defaultParser = new DefaultParser();
         defaultParser.setEscapeChars(new char[]{});
+        Completer completer = new Completers.TreeCompleter(
+                new Completers.TreeCompleter.Node(stringsCompleter, List.of()),
+                new Completers.TreeCompleter.Node(new StringsCompleter(executablesInPath.keySet()), List.of())
+        );
         LineReaderBuilder lineReaderBuilder = LineReaderBuilder.builder()
-                .completer(stringsCompleter)
+                .completer(completer)
                 .parser(defaultParser)
                 .terminal(terminal);
         this.terminal = terminal;
