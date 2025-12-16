@@ -1,5 +1,6 @@
 import org.jline.reader.LineReader;
 import org.jline.reader.LineReaderBuilder;
+import org.jline.reader.impl.DefaultParser;
 import org.jline.reader.impl.completer.StringsCompleter;
 import org.jline.terminal.Terminal;
 
@@ -19,8 +20,11 @@ public class Parser {
         List<String> builtIns = new ArrayList<>();
         Arrays.stream(Main.BuiltIns.values()).forEach(b -> builtIns.add(b.toString()));
         StringsCompleter stringsCompleter = new StringsCompleter(builtIns);
+        DefaultParser defaultParser = new DefaultParser();
+        defaultParser.setEscapeChars(new char[]{});
         LineReaderBuilder lineReaderBuilder = LineReaderBuilder.builder()
                 .completer(stringsCompleter)
+                .parser(defaultParser)
                 .terminal(terminal);
         this.terminal = terminal;
         this.lineReader = lineReaderBuilder.build();
@@ -46,7 +50,8 @@ public class Parser {
             if(insideQuote) {
                 prompt = "> ";
             }
-            for(char c: lineReader.readLine(prompt).toCharArray()) {
+            String line = lineReader.readLine(prompt);
+            for(char c: line.toCharArray()) {
                 if(escape) {
                     escape = false;
                     if(insideQuote && quoteValue == doubleQuote) {
