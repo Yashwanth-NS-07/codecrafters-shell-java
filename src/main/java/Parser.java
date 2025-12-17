@@ -37,7 +37,7 @@ public class Parser {
                 .terminal(terminal)
 //                .option(LineReader.Option.MENU_COMPLETE, false)
 //                .option(LineReader.Option.AUTO_MENU_LIST, false)
-//                .option(LineReader.Option.AUTO_LIST, false)
+                .option(LineReader.Option.AUTO_LIST, false)
                 .option(LineReader.Option.AUTO_MENU, false)
                 .option(LineReader.Option.LIST_AMBIGUOUS, true)
                 .variable(LineReader.BELL_STYLE, "audible");
