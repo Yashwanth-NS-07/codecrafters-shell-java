@@ -3,15 +3,15 @@ import org.jline.reader.Completer;
 import org.jline.reader.LineReader;
 import org.jline.reader.LineReaderBuilder;
 import org.jline.reader.impl.DefaultParser;
-import org.jline.reader.impl.completer.AggregateCompleter;
 import org.jline.reader.impl.completer.StringsCompleter;
 import org.jline.terminal.Terminal;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Paths;
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
 
 public class Parser {
     private Terminal terminal;
@@ -34,7 +34,13 @@ public class Parser {
         LineReaderBuilder lineReaderBuilder = LineReaderBuilder.builder()
                 .completer(completer)
                 .parser(defaultParser)
-                .terminal(terminal);
+                .terminal(terminal)
+//                .option(LineReader.Option.MENU_COMPLETE, false)
+//                .option(LineReader.Option.AUTO_MENU_LIST, false)
+//                .option(LineReader.Option.AUTO_LIST, false)
+                .option(LineReader.Option.AUTO_MENU, false)
+                .option(LineReader.Option.LIST_AMBIGUOUS, true)
+                .variable(LineReader.BELL_STYLE, "audible");
         this.terminal = terminal;
         this.lineReader = lineReaderBuilder.build();
     }
