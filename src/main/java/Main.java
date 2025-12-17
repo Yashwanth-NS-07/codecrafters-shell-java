@@ -30,17 +30,20 @@ public class Main {
         String path = System.getenv(PATH);
         String[] dirs = path.split(File.pathSeparator);
         for(String dir: dirs) {
-            checkForExecutables(new File(dir));
+            File file = new File(dir);
+            if(isExecutableFile(file)) {
+                executablesInPath.put(file.getName(), file);
+            } else if(file.isDirectory()) {
+                for(File internalFile: file.listFiles()) {
+                    if(isExecutableFile(internalFile)) {
+                        executablesInPath.put(file.getName(), file);
+                    }
+                }
+            }
         }
     }
     private static void checkForExecutables(File file) {
-        if(isExecutableFile(file)) {
-            executablesInPath.put(file.getName(), file);
-        } else if(file.isDirectory()) {
-            for(File internalFile: file.listFiles()) {
-                checkForExecutables(internalFile);
-            }
-        }
+
     }
     private static Terminal setupTerminal() throws IOException {
         TerminalBuilder terminalBuilder = TerminalBuilder.builder();

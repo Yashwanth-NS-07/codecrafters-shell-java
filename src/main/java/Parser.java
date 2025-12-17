@@ -31,16 +31,16 @@ public class Parser {
                 new Completers.TreeCompleter.Node(stringsCompleter, List.of()),
                 new Completers.TreeCompleter.Node(new StringsCompleter(executablesInPath.keySet()), List.of())
         );
+
+        BeepOnAmbiguousCompleter customCompleter = new BeepOnAmbiguousCompleter(completer, terminal);
         LineReaderBuilder lineReaderBuilder = LineReaderBuilder.builder()
-                .completer(completer)
+                .completer(customCompleter)
                 .parser(defaultParser)
                 .terminal(terminal)
 //                .option(LineReader.Option.MENU_COMPLETE, false)
 //                .option(LineReader.Option.AUTO_MENU_LIST, false)
-                .option(LineReader.Option.AUTO_LIST, false)
-                .option(LineReader.Option.AUTO_MENU, false)
-                .option(LineReader.Option.LIST_AMBIGUOUS, true)
-                .variable(LineReader.BELL_STYLE, "audible");
+//                .option(LineReader.Option.AUTO_LIST, false)
+                .option(LineReader.Option.AUTO_MENU, false);
         this.terminal = terminal;
         this.lineReader = lineReaderBuilder.build();
     }
