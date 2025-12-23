@@ -3,6 +3,8 @@ import org.jline.reader.Completer;
 import org.jline.reader.LineReader;
 import org.jline.reader.LineReaderBuilder;
 import org.jline.reader.impl.DefaultParser;
+import org.jline.reader.impl.completer.AggregateCompleter;
+import org.jline.reader.impl.completer.ArgumentCompleter;
 import org.jline.reader.impl.completer.StringsCompleter;
 import org.jline.terminal.Terminal;
 
@@ -24,22 +26,24 @@ public class Parser {
     public Parser(Terminal terminal, Map<String, File> executablesInPath) {
         List<String> builtIns = new ArrayList<>();
         Arrays.stream(Main.BuiltIns.values()).forEach(b -> builtIns.add(b.toString()));
-        StringsCompleter stringsCompleter = new StringsCompleter(builtIns);
+        StringsCompleter builtInsCompleter = new StringsCompleter(builtIns);
+        StringsCompleter executablesCompleter = new StringsCompleter(executablesInPath.keySet());
         DefaultParser defaultParser = new DefaultParser();
         defaultParser.setEscapeChars(new char[]{});
-        Completer completer = new Completers.TreeCompleter(
-                new Completers.TreeCompleter.Node(stringsCompleter, List.of()),
-                new Completers.TreeCompleter.Node(new StringsCompleter(executablesInPath.keySet()), List.of())
+        Completer completer = new AggregateCompleter(
+                builtInsCompleter,
+                executablesCompleter
         );
 
-        BeepOnAmbiguousCompleter customCompleter = new BeepOnAmbiguousCompleter(completer, terminal);
+        AutoCompleter customCompleter = new AutoCompleter(completer, terminal);
         LineReaderBuilder lineReaderBuilder = LineReaderBuilder.builder()
                 .completer(customCompleter)
                 .parser(defaultParser)
                 .terminal(terminal)
 //                .option(LineReader.Option.MENU_COMPLETE, false)
 //                .option(LineReader.Option.AUTO_MENU_LIST, false)
-//                .option(LineReader.Option.AUTO_LIST, false)
+                .option(LineReader.Option.AUTO_LIST, false)
+                .option(LineReader.Option.LIST_AMBIGUOUS, false)
                 .option(LineReader.Option.AUTO_MENU, false);
         this.terminal = terminal;
         this.lineReader = lineReaderBuilder.build();

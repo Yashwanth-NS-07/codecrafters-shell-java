@@ -34,9 +34,9 @@ public class Main {
             if(isExecutableFile(file)) {
                 executablesInPath.put(file.getName(), file);
             } else if(file.isDirectory()) {
-                for(File internalFile: file.listFiles()) {
+                for(File internalFile: Objects.requireNonNull(file.listFiles())) {
                     if(isExecutableFile(internalFile)) {
-                        executablesInPath.put(file.getName(), file);
+                        executablesInPath.put(internalFile.getName(), internalFile);
                     }
                 }
             }
