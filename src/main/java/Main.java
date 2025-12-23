@@ -132,14 +132,22 @@ public class Main {
 
     private static void runProcessParallelly(List<Program> programs) throws IOException, InterruptedException {
         List<ProcessBuilder> processBuilders = new ArrayList<>();
-        for (Program program : programs) {
+        for (int i = 0; i < programs.size(); i++) {
+            Program program = programs.get(i);
+            boolean isLast = i == programs.size() - 1 ? true: false;
             if (checkForExecutableFileInPath(program.getProgram()).isEmpty()) {
                 System.out.println(program.getProgram() + ": command not found");
                 break;
             }
             ProcessBuilder pb = new ProcessBuilder()
                     .command(List.of(program.getProgramAndArgs()))
-                    .inheritIO();
+                    .redirectError(ProcessBuilder.Redirect.PIPE)
+                    .redirectOutput(ProcessBuilder.Redirect.PIPE)
+                    .redirectInput(ProcessBuilder.Redirect.PIPE);
+            if(isLast) {
+                pb.redirectOutput(ProcessBuilder.Redirect.INHERIT)
+                        .redirectError(ProcessBuilder.Redirect.INHERIT);
+            }
             Optional<String> writeTo = program.getWriteTo();
             Optional<String> writeErrorTo = program.getWriteErrorTo();
             if (writeTo.isPresent()) {
@@ -164,30 +172,6 @@ public class Main {
                 processes.get(i).waitFor();
             }
         }
-    }
-
-    private static File maybeCreateFile(String fileName, boolean isAppend) throws IOException {
-        File file = new File(fileName).getCanonicalFile();
-        if(file.exists()) {
-            if(isAppend) return file;
-            else {
-                if(!file.delete()) {
-                    throw new RuntimeException("Failed to delete file: " + file.getAbsolutePath());
-                }
-                try {
-                    if(!file.createNewFile())
-                        throw new RuntimeException("Failed to create file: " + file.getAbsolutePath());
-                    return file;
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
-                }
-            }
-        } else {
-            if(!file.createNewFile()) {
-                throw new RuntimeException("Failed to create file: " + file.getAbsolutePath());
-            }
-        }
-        return file;
     }
 
     private static boolean checkForBuiltins(List<Program> programs) {

@@ -1,10 +1,8 @@
-import org.jline.builtins.Completers;
 import org.jline.reader.Completer;
 import org.jline.reader.LineReader;
 import org.jline.reader.LineReaderBuilder;
 import org.jline.reader.impl.DefaultParser;
 import org.jline.reader.impl.completer.AggregateCompleter;
-import org.jline.reader.impl.completer.ArgumentCompleter;
 import org.jline.reader.impl.completer.StringsCompleter;
 import org.jline.terminal.Terminal;
 
@@ -136,6 +134,9 @@ public class Parser {
                     if(c == singleQuote || c == doubleQuote) {
                         quoteValue = c == singleQuote? singleQuote: doubleQuote;
                         insideQuote = true;
+                    } else if(c == '|') {
+                        programs.add(new Program(args, writeTo, isAppend, writeErrorTo, isErrorAppend));
+                        args.clear();
                     } else if(c == ' ') {
                         if(!sb.isEmpty()) args.add(sb.toString());
                         sb.delete(0, sb.length());
