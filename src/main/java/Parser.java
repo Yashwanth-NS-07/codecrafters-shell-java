@@ -42,9 +42,11 @@ public class Parser {
                 .terminal(terminal)
 //                .option(LineReader.Option.MENU_COMPLETE, false)
 //                .option(LineReader.Option.AUTO_MENU_LIST, false)
+                .variable(LineReader.COMPLETE_PREFIX, true)
                 .option(LineReader.Option.AUTO_LIST, false)
                 .option(LineReader.Option.LIST_AMBIGUOUS, false)
                 .option(LineReader.Option.AUTO_MENU, false);
+
         this.terminal = terminal;
         this.lineReader = lineReaderBuilder.build();
     }

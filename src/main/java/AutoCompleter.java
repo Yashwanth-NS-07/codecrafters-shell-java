@@ -4,9 +4,9 @@ import org.jline.reader.LineReader;
 import org.jline.reader.ParsedLine;
 import org.jline.terminal.Terminal;
 
+import javax.sound.sampled.Line;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 public class AutoCompleter implements Completer {
     private final Completer delegate;
@@ -24,7 +24,7 @@ public class AutoCompleter implements Completer {
         delegate.complete(reader, line, candidates);
 
         List<String> possibleCompletionsList = possibleCompletionList(line.line(), candidates);
-
+//        if(canBeCompletedPartially(reader, line.line(), possibleCompletionsList)) return;
         // Beep when multiple matches exist
         if (possibleCompletionsList.size() > 1) {
             terminal.writer().write('\007');
@@ -43,6 +43,36 @@ public class AutoCompleter implements Completer {
             }
         }
     }
+
+    private boolean canBeCompletedPartially(LineReader reader, String line, List<String> possibleCompletionsList) {
+        int minLength = minLength(possibleCompletionsList);
+        StringBuilder commonCharacters = new StringBuilder();
+        for(int i = line.length(); i < minLength; i++) {
+            boolean isCommon = true;
+            char c = possibleCompletionsList.get(0).charAt(i);
+            for(int j = 1; j < possibleCompletionsList.size(); j++) {
+                if(possibleCompletionsList.get(j).charAt(i) != c) {
+                    isCommon = false;
+                }
+            }
+            if(isCommon) {
+                commonCharacters.append(c);
+            }
+        }
+        if(commonCharacters.isEmpty()) {
+            return false;
+        }
+        reader.getBuffer().write(commonCharacters.toString());
+        return true;
+    }
+    private int minLength(List<String> list) {
+        if(list.isEmpty()) return 0;
+        int minLength = list.get(0).length();
+        for(String s: list) {
+            if(s.length() < minLength) minLength = s.length();
+        }
+        return minLength;
+   }
 
     private List<String> possibleCompletionList(String prefix, List<Candidate> candidates) {
         List<String> completionList = new ArrayList<>();
