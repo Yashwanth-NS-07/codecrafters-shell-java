@@ -15,7 +15,8 @@ import java.util.Map;
 
 public class Parser {
     private Terminal terminal;
-    private LineReader lineReader;
+    // exposing for get the history data
+    LineReader lineReader;
     private final char singleQuote = '\'';
     private final char doubleQuote = '"';
     private final char backslash = '\\';

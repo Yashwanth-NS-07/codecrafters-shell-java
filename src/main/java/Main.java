@@ -1,3 +1,5 @@
+import org.jline.reader.History;
+import org.jline.reader.LineReader;
 import org.jline.terminal.Terminal;
 import org.jline.terminal.TerminalBuilder;
 
@@ -42,9 +44,7 @@ public class Main {
             }
         }
     }
-    private static void checkForExecutables(File file) {
 
-    }
     private static Terminal setupTerminal() throws IOException {
         TerminalBuilder terminalBuilder = TerminalBuilder.builder();
         return terminalBuilder.build();
@@ -226,6 +226,16 @@ public class Main {
                     isRunning = false;
                 }
                 return new BuiltInsOutput("", "", 1);
+            }
+        },
+        history {
+            public BuiltInsOutput doTask(String... args) {
+                List<String> history = new ArrayList<>();
+                int i = 1;
+                for(History.Entry entry: parser.lineReader.getHistory()) {
+                    history.add(i++ + "  " + entry.line());
+                }
+                return new BuiltInsOutput(String.join("\n", history), "", 0);
             }
         },
         echo {
