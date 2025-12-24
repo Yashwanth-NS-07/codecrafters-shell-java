@@ -235,6 +235,11 @@ public class Main {
                 for(History.Entry entry: parser.lineReader.getHistory()) {
                     history.add(i++ + "  " + entry.line());
                 }
+                if(args.length == 1) {
+                    int size = history.size();
+                    int limit = Integer.parseInt(args[0]);
+                    history = history.subList(size-limit, size);
+                }
                 return new BuiltInsOutput(String.join("\n", history), "", 0);
             }
         },
