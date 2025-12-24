@@ -105,7 +105,12 @@ public class Main {
                     break;
                 }
                 ProcessBuilder processBuilder = new ProcessBuilder(program.getProgramAndArgs());
-                processBuilder.inheritIO();
+                if(isLast) processBuilder.inheritIO();
+                else {
+                    processBuilder.redirectError(ProcessBuilder.Redirect.PIPE)
+                            .redirectOutput(ProcessBuilder.Redirect.PIPE)
+                            .redirectInput(ProcessBuilder.Redirect.PIPE);
+                }
                 if(program.getWriteTo().isPresent()) {
                     if(program.getIsAppend()) {
                         processBuilder.redirectOutput(ProcessBuilder.Redirect.appendTo(new File(program.getWriteTo().get())));
@@ -175,14 +180,17 @@ public class Main {
     }
 
     private static boolean checkForBuiltins(List<Program> programs) {
+        boolean hasBuiltIn = true;
         for(Program program: programs) {
             try {
                 BuiltIns.valueOf(program.getProgram());
+                hasBuiltIn = true;
             } catch (IllegalArgumentException e) {
-                return false;
+                hasBuiltIn = false;
             }
+
         }
-        return true;
+        return hasBuiltIn;
     }
 
     private static Optional<File> checkForExecutableFileInPath(String program) {
