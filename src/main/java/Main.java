@@ -232,6 +232,7 @@ public class Main {
             }
         },
         history {
+            private int lastHistoryIndex = 0;
             public BuiltInsOutput doTask(String... args) {
                 History history = parser.lineReader.getHistory();
                 StringBuilder errorOutput = new StringBuilder();
@@ -302,10 +303,9 @@ public class Main {
                 }
             }
             private void writeToFile(History history, File file, boolean isAppend) throws IOException {
-                try(PrintWriter writer = new PrintWriter(new FileOutputStream(file, isAppend), true)) {
-                    history.moveToFirst();
-                    for (History.Entry entry : history) {
-                        writer.println(entry.line());
+                try(PrintWriter writer = new PrintWriter(new FileOutputStream(file, isAppend))) {
+                    for (; lastHistoryIndex < history.size(); lastHistoryIndex++) {
+                        writer.println(history.get(lastHistoryIndex));
                     }
                 }
             }
