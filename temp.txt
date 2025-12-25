@@ -1,3 +1,4 @@
+rm temp.txt
+clear
 echo a
-echo aa
-
+history -w temp.txt

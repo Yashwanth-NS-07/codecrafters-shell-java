@@ -266,7 +266,12 @@ public class Main {
                             if(args.length == 1) {
                                 errorOutput.append("history: no file output");
                             } else {
-
+                                try {
+                                    writeToFile(history, new File(args[1]));
+                                } catch (IOException ioe) {
+                                    errorOutput.append("history: ")
+                                            .append(ioe.getMessage());
+                                }
                             }
                         } else {
                             errorOutput.append("history: unknown argument ")
@@ -283,6 +288,13 @@ public class Main {
                 String line;
                 while((line = reader.readLine()) != null && !line.isEmpty()) {
                     history.add(line);
+                }
+            }
+            private void writeToFile(History history, File file) throws IOException {
+                try(PrintWriter writer = new PrintWriter(file)) {
+                    for (History.Entry entry : history) {
+                        writer.println(entry.line());
+                    }
                 }
             }
             private String printableFormat(History history, int count) {
