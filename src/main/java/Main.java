@@ -20,8 +20,10 @@ public class Main {
         try {
             init();
             parser = new Parser(setupTerminal(),  executablesInPath);
-            addHistory();
+            String histFile = System.getenv("HISTFILE");
+            int addedHistoryCount = addHistory(parser.lineReader.getHistory(), histFile);
             startShell();
+            saveHistoryToFile(parser.lineReader.getHistory(), addedHistoryCount,  histFile);
         } catch (IOException e) {
             System.err.println("Failed to start shell: " + e.getMessage());
         }
@@ -44,14 +46,21 @@ public class Main {
             }
         }
     }
-    private static void addHistory() throws IOException {
-        History history = parser.lineReader.getHistory();
-        String startupHistoryFileName = System.getenv("HISTFILE");
-        if(startupHistoryFileName == null) return;
-        BufferedReader reader = new BufferedReader(new FileReader(startupHistoryFileName));
+    private static int addHistory(History history, String histFile) throws IOException {
+        if(histFile == null) return 0;
+        BufferedReader reader = new BufferedReader(new FileReader(histFile));
         String line;
         while((line = reader.readLine()) != null && !line.isEmpty()) {
             history.add(line);
+        }
+        return history.size();
+    }
+    private static void saveHistoryToFile(History history, int historyIndex, String histFile) throws FileNotFoundException {
+        if(histFile == null) return;
+        for(int i = historyIndex; i < history.size(); i++) {
+            try(PrintWriter writer = new PrintWriter(new FileOutputStream(histFile, true))) {
+                writer.println(history.get(i));
+            }
         }
     }
 
