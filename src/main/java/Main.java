@@ -106,7 +106,10 @@ public class Main {
                     break;
                 }
                 ProcessBuilder processBuilder = new ProcessBuilder(program.getProgramAndArgs());
-                if(isLast) processBuilder.inheritIO();
+                if(isLast) {
+                    processBuilder.inheritIO();
+                    processBuilder.redirectInput(ProcessBuilder.Redirect.PIPE);
+                }
                 else {
                     processBuilder.redirectError(ProcessBuilder.Redirect.PIPE)
                             .redirectOutput(ProcessBuilder.Redirect.PIPE)
@@ -130,6 +133,7 @@ public class Main {
                 Process process = processBuilder.start();
                 if(output != null && output.output != null && !output.output.isEmpty()) {
                     process.getOutputStream().write(output.output.getBytes(StandardCharsets.UTF_8));
+                    process.getOutputStream().close();
                 }
                 process.waitFor();
             }
