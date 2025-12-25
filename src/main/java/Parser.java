@@ -41,6 +41,7 @@ public class Parser {
                 .terminal(terminal)
 //                .option(LineReader.Option.MENU_COMPLETE, false)
 //                .option(LineReader.Option.AUTO_MENU_LIST, false)
+                .option(LineReader.Option.HISTORY_IGNORE_DUPS, false)
                 .variable(LineReader.COMPLETE_PREFIX, true)
                 .option(LineReader.Option.AUTO_LIST, false)
                 .option(LineReader.Option.LIST_AMBIGUOUS, false)
