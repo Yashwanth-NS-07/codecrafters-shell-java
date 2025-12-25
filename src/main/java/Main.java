@@ -27,7 +27,7 @@ public class Main {
             System.err.println("Failed to start shell: " + e.getMessage());
         }
     }
-    private static void init() {
+    private static void init() throws IOException {
         // adding executables
         executablesInPath.clear();
         String path = System.getenv(PATH);
@@ -43,6 +43,14 @@ public class Main {
                     }
                 }
             }
+        }
+        // adding history
+        History history = parser.lineReader.getHistory();
+        String startupHistoryFileName = System.getenv("HISTFILE");
+        BufferedReader reader = new BufferedReader(new FileReader(startupHistoryFileName));
+        String line;
+        while((line = reader.readLine()) != null && !line.isEmpty()) {
+            history.add(line);
         }
     }
 
