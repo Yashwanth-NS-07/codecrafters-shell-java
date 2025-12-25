@@ -267,8 +267,19 @@ public class Main {
                                 errorOutput.append("history: no file output");
                             } else {
                                 try {
-                                    writeToFile(history, new File(args[1]));
+                                    writeToFile(history, new File(args[1]), false);
                                 } catch (IOException ioe) {
+                                    errorOutput.append("history: ")
+                                            .append(ioe.getMessage());
+                                }
+                            }
+                        } else if(args[0].equals("-a")) {
+                            if(args.length == 1) {
+                                errorOutput.append("history: no file output");
+                            } else {
+                                try {
+                                    writeToFile(history, new File(args[1]), true);
+                                } catch(IOException ioe) {
                                     errorOutput.append("history: ")
                                             .append(ioe.getMessage());
                                 }
@@ -290,8 +301,8 @@ public class Main {
                     history.add(line);
                 }
             }
-            private void writeToFile(History history, File file) throws IOException {
-                try(PrintWriter writer = new PrintWriter(file)) {
+            private void writeToFile(History history, File file, boolean isAppend) throws IOException {
+                try(PrintWriter writer = new PrintWriter(new FileOutputStream(file, isAppend))) {
                     for (History.Entry entry : history) {
                         writer.println(entry.line());
                     }

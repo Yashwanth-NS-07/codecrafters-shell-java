@@ -1,4 +1,0 @@
-rm temp.txt
-clear
-echo a
-history -w temp.txt
