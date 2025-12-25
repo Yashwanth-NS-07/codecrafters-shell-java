@@ -133,7 +133,7 @@ public class Main {
                 Process process = processBuilder.start();
                 if(output != null && output.output != null && !output.output.isEmpty()) {
                     process.getOutputStream().write(output.output.getBytes(StandardCharsets.UTF_8));
-                    process.getOutputStream().write(-1);
+                    process.getOutputStream().write('\n');
                     process.getOutputStream().close();
                 }
                 process.waitFor();
