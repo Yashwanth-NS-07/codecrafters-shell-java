@@ -302,7 +302,7 @@ public class Main {
                 }
             }
             private void writeToFile(History history, File file, boolean isAppend) throws IOException {
-                try(PrintWriter writer = new PrintWriter(new FileOutputStream(file, isAppend))) {
+                try(PrintWriter writer = new PrintWriter(new FileOutputStream(file, isAppend), true)) {
                     for (History.Entry entry : history) {
                         writer.println(entry.line());
                     }

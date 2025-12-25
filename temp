@@ -1,7 +1,13 @@
-ls
-rm temp
+echo a
+echo b
+echo c
+echo d
 history -a temp
-ls
-rm temp
+echo a
+echo b
+echo c
+echo d
 history -a temp
+echo e
+echo f
 history -a temp
