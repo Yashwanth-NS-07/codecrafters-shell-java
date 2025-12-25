@@ -1,9 +1,7 @@
 import org.jline.reader.History;
-import org.jline.reader.LineReader;
 import org.jline.terminal.Terminal;
 import org.jline.terminal.TerminalBuilder;
 
-import javax.sound.sampled.Line;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
@@ -22,6 +20,7 @@ public class Main {
         try {
             init();
             parser = new Parser(setupTerminal(),  executablesInPath);
+            addHistory();
             startShell();
         } catch (IOException e) {
             System.err.println("Failed to start shell: " + e.getMessage());
@@ -44,7 +43,8 @@ public class Main {
                 }
             }
         }
-        // adding history
+    }
+    private static void addHistory() throws IOException {
         History history = parser.lineReader.getHistory();
         String startupHistoryFileName = System.getenv("HISTFILE");
         BufferedReader reader = new BufferedReader(new FileReader(startupHistoryFileName));
