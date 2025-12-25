@@ -1,5 +1,0 @@
-ls
-rm temp
-history -a temp
-cat temp
-history -a temp
