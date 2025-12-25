@@ -1,4 +1,7 @@
-history -w temp
-history -w temp
-cat temp
+ls
+rm temp
+history -a temp
+ls
+rm temp
+history -a temp
 history -a temp
