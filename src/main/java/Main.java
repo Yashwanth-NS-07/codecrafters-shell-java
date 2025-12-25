@@ -47,6 +47,7 @@ public class Main {
     private static void addHistory() throws IOException {
         History history = parser.lineReader.getHistory();
         String startupHistoryFileName = System.getenv("HISTFILE");
+        if(startupHistoryFileName == null) return;
         BufferedReader reader = new BufferedReader(new FileReader(startupHistoryFileName));
         String line;
         while((line = reader.readLine()) != null && !line.isEmpty()) {
