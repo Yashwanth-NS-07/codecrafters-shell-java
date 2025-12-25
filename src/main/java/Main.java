@@ -3,6 +3,7 @@ import org.jline.reader.LineReader;
 import org.jline.terminal.Terminal;
 import org.jline.terminal.TerminalBuilder;
 
+import javax.sound.sampled.Line;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
@@ -180,17 +181,14 @@ public class Main {
     }
 
     private static boolean checkForBuiltins(List<Program> programs) {
-        boolean hasBuiltIn = true;
         for(Program program: programs) {
             try {
                 BuiltIns.valueOf(program.getProgram());
-                hasBuiltIn = true;
-            } catch (IllegalArgumentException e) {
-                hasBuiltIn = false;
+                return true;
+            } catch (IllegalArgumentException ignored) {
             }
-
         }
-        return hasBuiltIn;
+        return false;
     }
 
     private static Optional<File> checkForExecutableFileInPath(String program) {
@@ -230,17 +228,65 @@ public class Main {
         },
         history {
             public BuiltInsOutput doTask(String... args) {
-                List<String> history = new ArrayList<>();
-                int i = 1;
-                for(History.Entry entry: parser.lineReader.getHistory()) {
-                    history.add(i++ + "  " + entry.line());
+                History history = parser.lineReader.getHistory();
+                StringBuilder errorOutput = new StringBuilder();
+                StringBuilder output = new StringBuilder();
+                if(args.length > 0) {
+                    try {
+                        int count = Integer.parseInt(args[0]);
+                        if(args.length > 1) {
+                            errorOutput.append("history: too many arguments");
+                        } else {
+                            if(count < 0) {
+                                errorOutput.append("history: ")
+                                        .append(count)
+                                        .append(" invalid option");
+                            } else {
+                                output.append(printableFormat(history, count));
+                            }
+                        }
+                    } catch (NumberFormatException nfe) {
+                        if(args[0].equals("-r")) {
+                            if(args.length == 1) {
+                                errorOutput.append("history: no file input");
+                            } else {
+                                try {
+                                    addToHistory(history, new File(args[1]));
+                                } catch (IOException e) {
+                                    errorOutput.append("history: ")
+                                            .append(e.getMessage());
+                                }
+                            }
+                        } else if(args[0].equals("-w")) {
+                            if(args.length == 1) {
+                                errorOutput.append("history: no file output");
+                            } else {
+
+                            }
+                        } else {
+                            errorOutput.append("history: unknown argument ")
+                                    .append(args[0]);
+                        }
+                    }
+                } else {
+                    output.append(printableFormat(history, history.size()));
                 }
-                if(args.length == 1) {
-                    int size = history.size();
-                    int limit = Integer.parseInt(args[0]);
-                    history = history.subList(size-limit, size);
+                return new BuiltInsOutput(output.toString(), errorOutput.toString(), 0);
+            }
+            private void addToHistory(History history, File file) throws IOException {
+                BufferedReader reader = new BufferedReader(new FileReader(file));
+                String line;
+                while((line = reader.readLine()) != null && !line.isEmpty()) {
+                    history.add(line);
                 }
-                return new BuiltInsOutput(String.join("\n", history), "", 0);
+            }
+            private String printableFormat(History history, int count) {
+                List<String> historyList = new ArrayList<>();
+                for(int i = history.size() - count; i < history.size(); i++) {
+                    history.moveTo(i);
+                    historyList.add(history.index()+1 + "  " + history.current());
+                }
+                return String.join("\n", historyList);
             }
         },
         echo {
